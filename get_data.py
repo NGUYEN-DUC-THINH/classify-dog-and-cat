@@ -1,28 +1,31 @@
-import cv2
-import os
-from tqdm import tqdm
-import numpy as np
-import shutil
+import requests
+import argparse
 
 
+def bing_search(query,k):
+    url = 'https://api.cognitive.microsoft.com/bing/v7.0/images/search'
+    payload = {'q': query, 'offset': k}
+    headers = {'Ocp-Apim-Subscription-Key': 'fc6e567891ae43238b40babb1fe0aa06'}
+    r = requests.get(url, params=payload, headers=headers)
+    return r.json()
+ap = argparse.ArgumentParser()
+ap.add_argument('-q', '--query', required=True,
+	help='search query to search Bing Image API for')
+ap.add_argument('-p', '--path', required=True,
+	help='path to output directory of images')
 
+args = vars(ap.parse_args())
+path = args['path']
+query = args['query']
 
-def move_data(org_data):
-    for img in os.listdir(org_data):
-        label = img.split('.')[0]
-        if label =='cat':
-            shutil.copy(org_data + '/'+ img , 'data/train/cat')
-        elif label =='dog':
-            shutil.copy(org_data + '/'+ img , 'data/train/dog')
-
-dir = 'data/train'
-org_data = 'data/org_data'
-if os.path.exists(dir):
-    shutil.rmtree(dir,ignore_errors=True)
-os.mkdir(dir)
-os.mkdir(dir+'/cat')
-os.mkdir(dir+'/dog')
-move_data(org_data)
-                    
-
+k = 0
+for i in range(100):
+    j = bing_search(query,k)
+    print(len(j['value']))
+    for i in j['value']:
+        r = requests.get(i['contentUrl'], allow_redirects=False)
+        f = open(path + '/' + str(k) + '.' + query +'.jpg', 'wb')
+        f.write(r.content)   
+        f.close()
+        k += 1
 
