@@ -15,7 +15,7 @@ model = models.load_model('model/model.mod')
 
 img = cv2.imread(args["image"])
 image = cv2.resize(img, (128, 128))
-image = (image[...,::-1].astype(np.float32))
+image = (image[...,::-1].astype(np.float64))
 image = mobilenet_v2.preprocess_input(image)
 image = np.expand_dims(image, axis=0)
 
